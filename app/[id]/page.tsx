@@ -8,26 +8,14 @@ interface Post {
     body: string;
 }
 
-type PageProps = {
-    params: {
-        key: string;
-        id: string;
-    }
+interface PageProps {
+    params: { id: string };
 }
 
-// const page = ({ params }: PageProps) => {
-//     return (
-//         <JobDescription id={params.jobdetail} />
-//     )
-// }
-
+// ✅ Server-Side Fetching with Error Handling
 export default async function PostDetails({ params }: PageProps) {
-    // console.log("Server Received params:", params);
-    // console.log("Type of id:", typeof params.id);
-
-    if (!params?.id) return notFound();
-
-    const id = String(params?.id); // Ensure it's a string explicitly
+    const { id } = await params; // Ensure params is resolved properly
+    if (!id) return notFound();
 
     try {
         const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`, {
@@ -36,13 +24,16 @@ export default async function PostDetails({ params }: PageProps) {
 
         if (!response.ok) return notFound();
 
-        const post = await response.json();
+        const post: Post = await response.json();
 
         return (
-            <div>
-                <h1>{post?.id}: {post?.title}</h1>
-                <p>{post?.body}</p>
-            </div>
+            <Container className="mt-4">
+                <h1>{post.id}: {post.title}</h1>
+                <p>{post.body}</p>
+                <Link href="/" passHref>
+                    <Button variant="secondary">Back to Blog</Button>
+                </Link>
+            </Container>
         );
     } catch (error) {
         console.error("Error fetching post:", error);
